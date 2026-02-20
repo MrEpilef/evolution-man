@@ -4,6 +4,7 @@ import '../services/player_service.dart';
 
 /// O Controller atua como a ponte entre a View e o Service.
 /// Ele gerencia o estado da UI e reage às interações do usuário.
+/// 
 class PlayerController extends ChangeNotifier {
   // Instâncias do Model e do Service
   final PlayerModel _player = PlayerModel();
