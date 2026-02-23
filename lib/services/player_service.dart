@@ -1,27 +1,45 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../models/player_model.dart';
 
-class PlayerService{
-  /// Processa o ganho de XP e verifica evolução de nível.
-  /// Aplica a regra de negócio central do sistema.
-  PlayerModel processarGanhoXP(PlayerModel player, double quantidade){
-    // Validação de segurança: XP não pode ser negativo
-    if (quantidade <= 0) return player;
+class PlayerService {
+  // Nome do arquivo onde os dados serão salvos no Windows
+  final String _fileName = 'player_data.json';
 
-    double novoXp = player.xp + (quantidade / 100);
-    int novoLevel = player.level;
+  // Método privado para localizar o caminho correto no disco
+  Future<File> _getFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/$_fileName');
+  }
 
-    // Lógica de Level Up (Pode ser complexa no futuro, ex: curva de XP)
-    while (novoXp >= 1.0){
-      novoXp -= 1.0;
-      novoLevel++;
-
+  // SALVAR: Transforma o objeto em texto JSON e grava no arquivo
+  Future<void> savePlayer(PlayerModel player) async {
+    try {
+      final file = await _getFile();
+      // jsonEncode transforma o mapa do toJson() em uma String
+      String jsonString = jsonEncode(player.toJson());
+      await file.writeAsString(jsonString);
+    } catch (e) {
+      print("Erro ao salvar dados: $e");
     }
-    // Retorna uma nova instância ou atualiza a atual 
-    // (Bons princípios: imutabilidade ajuda a evitar bugs de estado)
+  }
 
-    player.xp = novoXp;
-    player.level = novoLevel;
-
-    return player;
+  // CARREGAR: Lê o arquivo e reconstrói o objeto PlayerModel
+  Future<PlayerModel> loadPlayer() async {
+    try {
+      final file = await _getFile();
+      if (await file.exists()) {
+        String content = await file.readAsString();
+        // jsonDecode transforma o texto de volta em um Mapa
+        Map<String, dynamic> jsonMap = jsonDecode(content);
+        return PlayerModel.fromJson(jsonMap);
+      }
+    } catch (e) {
+      print("Erro ao carregar dados: $e");
+    }
+    
+    // Retorna um jogador inicial se o arquivo não existir (Primeira vez rodando o app)
+    return PlayerModel(level: 1, xp: 0.0, fisico: 0, mental: 0);
   }
 }

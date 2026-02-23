@@ -14,21 +14,25 @@ class PlayerModel{
     this.mental = 0,
   });
 
+  // Converte JSON (Mapa) para Objeto Dart
   factory PlayerModel.fromJson(Map<String, dynamic> json) {
     return PlayerModel(
       level: json['level'] ?? 1,
-      xp: (json['xp'] ?? 0.0).toDouble(),
+      xp: json['xp'] ?? 0.0,
       fisico: json['fisico'] ?? 0,
       mental: json['mental'] ?? 0,
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'level': level,
-    'xp': xp,
-    'fisico': fisico,
-    'mental': mental,
-  };
+  // Converte Objeto Dart para JSON (Mapa)
+  Map<String, dynamic> toJson() {
+    return {
+      'level': level,
+      'xp': xp,
+      'fisico': fisico,
+      'mental': mental,
+    };
+  }
 
 }
 
