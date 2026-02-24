@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class MissionModel {
   final String id;
   final String titulo;
@@ -34,5 +32,29 @@ class MissionModel {
   int get horasDesdeAUltimaConclusao {
     if (ultimaConclusao == null) return 999; //Valor alto para nao realizar
     return DateTime.now().difference(ultimaConclusao!).inHours;
+  }
+
+  //Converve objeto para Json
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'titulo': titulo,
+      'recompensaXP': recompensaXP,
+      'tipo': tipo,
+      'ultimaConclusao': ultimaConclusao?.toIso8601String(),
+    };
+  }
+
+  //Converte Json para objeto
+  factory MissionModel.fromJson(Map<String, dynamic> json) {
+    return MissionModel(
+      id: json['id'],
+      titulo: json['titulo'],
+      recompensaXP: json['recompensaXP'].toDouble(),
+      tipo: json['tipo'],
+      ultimaConclusao: json['ultimaConclusao'] != null
+          ? DateTime.parse(json['ultimaConclusao'])
+          : null,
+    );
   }
 }

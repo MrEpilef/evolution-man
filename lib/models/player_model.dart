@@ -1,7 +1,4 @@
-
-
-class PlayerModel{
-
+class PlayerModel {
   int level;
   double xp;
   int fisico;
@@ -26,13 +23,6 @@ class PlayerModel{
 
   // Converte Objeto Dart para JSON (Mapa)
   Map<String, dynamic> toJson() {
-    return {
-      'level': level,
-      'xp': xp,
-      'fisico': fisico,
-      'mental': mental,
-    };
+    return {'level': level, 'xp': xp, 'fisico': fisico, 'mental': mental};
   }
-
 }
-

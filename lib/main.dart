@@ -7,9 +7,7 @@ void main() {
   runApp(
     // O MultiProvider facilita a adição de novos Controllers no futuro
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => PlayerController()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => PlayerController())],
       child: const EvolutionManApp(),
     ),
   );
