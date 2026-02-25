@@ -40,6 +40,6 @@ class PlayerService {
     }
     
     // Retorna um jogador inicial se o arquivo não existir (Primeira vez rodando o app)
-    return PlayerModel(level: 1, xp: 0.0, fisico: 0, mental: 0);
+    return PlayerModel(level: 1, xp: 0.0, fisico: 0, mental: 0, missoes:[] );
   }
 }
