@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Importe o provider
+import 'package:provider/provider.dart'; 
 import 'controllers/player_controller.dart';
 import 'views/dashboard_view.dart';
 
 void main() {
   runApp(
-    // O MultiProvider facilita a adição de novos Controllers no futuro
+    // Facilitar a adição de novos Controllers no futuro
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => PlayerController())],
       child: const EvolutionManApp(),

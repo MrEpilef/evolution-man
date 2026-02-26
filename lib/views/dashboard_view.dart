@@ -8,12 +8,12 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Escuta as alterações no Controller (Padrão Observer)
+    // Escutando o Controller para reagir a mudanças de XP ou novas missões
     final controller = context.watch<PlayerController>();
     final player = controller.player;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A), // Fundo Escuro Moderno
+      backgroundColor: const Color(0xFF0F172A), // Fundo Dark Moderno
       appBar: AppBar(
         title: const Text(
           'EVOLUTION MAN',
@@ -27,17 +27,25 @@ class DashboardView extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
+
+      // BOTÃO PARA ADICIONAR MISSÕES
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.greenAccent[400],
+        onPressed: () => _abrirFormularioMissao(context, controller),
+        child: const Icon(Icons.add, color: Colors.black, size: 30),
+      ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- CARTÃO DE ESTADO DO JOGADOR ---
+            // --- CABEÇALHO DO JOGADOR ---
             _buildPlayerHeader(player),
             
             const SizedBox(height: 30),
             
-            // --- SECÇÃO DE ATRIBUTOS ---
+            // --- SEÇÃO DE ATRIBUTOS ---
             const Text(
               "ATRIBUTOS",
               style: TextStyle(
@@ -68,7 +76,7 @@ class DashboardView extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             
-            // Renderização dinâmica da lista de missões vindas do JSON
+            // ListView que cresce conforme você adiciona missões
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -84,7 +92,129 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  // Widget: Cabeçalho com Nível e Barra de XP
+  // FUNÇÃO: Abre o painel inferior para cadastrar a missão
+  void _abrirFormularioMissao(BuildContext context, PlayerController controller) {
+    final TextEditingController tituloController = TextEditingController();
+    double xpSelecionado = 15.0;
+    String tipoSelecionado = 'fisico';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Permite que o teclado não cubra o formulário
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                left: 20, right: 20, top: 20
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "NOVA MISSÃO",
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Nome da Missão
+                  TextField(
+                    controller: tituloController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: "Ex: Correr 5km",
+                      hintStyle: const TextStyle(color: Colors.white24),
+                      labelText: "O que você vai realizar?",
+                      labelStyle: const TextStyle(color: Colors.greenAccent),
+                      enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.white10)),
+                      focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.greenAccent)),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 25),
+                  
+                  // Seleção de Tipo
+                  const Text("Foco da Missão:", style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  Row(
+                    children: [
+                      Radio<String>(
+                        value: 'fisico',
+                        groupValue: tipoSelecionado,
+                        activeColor: Colors.orangeAccent,
+                        onChanged: (val) => setModalState(() => tipoSelecionado = val!),
+                      ),
+                      const Text("Físico", style: TextStyle(color: Colors.white)),
+                      const SizedBox(width: 20),
+                      Radio<String>(
+                        value: 'mental',
+                        groupValue: tipoSelecionado,
+                        activeColor: Colors.lightBlueAccent,
+                        onChanged: (val) => setModalState(() => tipoSelecionado = val!),
+                      ),
+                      const Text("Mental", style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // Controle de Recompensa (XP)
+                  Text(
+                    "Recompensa: ${xpSelecionado.toInt()} XP",
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  Slider(
+                    value: xpSelecionado,
+                    min: 5, max: 50, divisions: 9,
+                    activeColor: Colors.greenAccent,
+                    onChanged: (val) => setModalState(() => xpSelecionado = val),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // Botão para salvar
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent[700],
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        if (tituloController.text.isNotEmpty) {
+                          // O Controller gera o ID automaticamente lá dentro
+                          controller.adicionarMissao(
+                            titulo: tituloController.text,
+                            xp: xpSelecionado,
+                            tipo: tipoSelecionado,
+                          );
+                          Navigator.pop(context); // Fecha o formulário
+                        }
+                      },
+                      child: const Text(
+                        "CADASTRAR MISSÃO",
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // --- WIDGETS AUXILIARES (COMPONENTIZAÇÃO) ---
+
   Widget _buildPlayerHeader(player) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -107,7 +237,7 @@ class DashboardView extends StatelessWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 42,
-                      fontWeight: FontWeight.w900, // Corrigido de .black para .w900
+                      fontWeight: FontWeight.w900, // Uso de w900 para evitar erro de getter
                     ),
                   ),
                 ],
@@ -138,7 +268,6 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  // Widget: Cartão de Atributo Individual
   Widget _buildStatCard(String label, int value, Color color, IconData icon) {
     return Expanded(
       child: Container(
@@ -157,11 +286,7 @@ class DashboardView extends StatelessWidget {
                 Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10)),
                 Text(
                   "$value",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             )
@@ -171,28 +296,25 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  // Widget: Elemento de Missão Dinâmico
   Widget _buildMissionTile(BuildContext context, PlayerController controller, MissionModel mission) {
-    final bool concluidaHoje = mission.foiConcluidaHoje;
+    final bool concluida = mission.foiConcluidaHoje;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: concluidaHoje ? Colors.white.withOpacity(0.05) : const Color(0xFF1E293B),
+        color: concluida ? Colors.white.withOpacity(0.05) : const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: concluidaHoje ? Colors.transparent : Colors.white10),
+        border: Border.all(color: concluida ? Colors.transparent : Colors.white10),
       ),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: mission.tipo == 'fisico' 
-                ? Colors.orange.withOpacity(0.2) 
-                : Colors.blue.withOpacity(0.2),
+            backgroundColor: mission.tipo == 'fisico' ? Colors.orange.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
             child: Icon(
               mission.tipo == 'fisico' ? Icons.bolt : Icons.auto_stories,
               color: mission.tipo == 'fisico' ? Colors.orange : Colors.blue,
-              size: 20,
+              size: 18,
             ),
           ),
           const SizedBox(width: 15),
@@ -203,32 +325,29 @@ class DashboardView extends StatelessWidget {
                 Text(
                   mission.titulo,
                   style: TextStyle(
-                    color: concluidaHoje ? Colors.white38 : Colors.white,
+                    color: concluida ? Colors.white38 : Colors.white,
                     fontWeight: FontWeight.bold,
-                    decoration: concluidaHoje ? TextDecoration.lineThrough : null,
+                    decoration: concluida ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 Text(
                   "+${mission.recompensaXP.toInt()} XP",
-                  style: TextStyle(
-                    color: Colors.greenAccent.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.greenAccent.withOpacity(0.7), fontSize: 12),
                 ),
               ],
             ),
           ),
           ElevatedButton(
-            onPressed: concluidaHoje ? null : () => controller.concluirMissao(mission),
+            onPressed: concluida ? null : () => controller.concluirMissao(mission),
             style: ElevatedButton.styleFrom(
-              backgroundColor: concluidaHoje ? Colors.grey[800] : Colors.greenAccent[700],
+              backgroundColor: concluida ? Colors.grey[800] : Colors.greenAccent[700],
               disabledBackgroundColor: Colors.grey[800],
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
             child: Text(
-              concluidaHoje ? "FEITO" : "CONCLUIR",
+              concluida ? "FEITO" : "CONCLUIR",
               style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
             ),
           ),
